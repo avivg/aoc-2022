@@ -25,5 +25,6 @@ mod day$1 {
 const INPUT: &str = include_str!(\"input.txt\");
 " > $name/src/main.rs
 
+code $name/
 code $name/src/main.rs
 code $name/src/input.txt
