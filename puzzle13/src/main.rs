@@ -1,7 +1,7 @@
 fn main() {
     for func in [day13::part1, day13::part2] {
         let start = std::time::Instant::now();
-        let res = func(INPUT);
+        let res = func();
         let dur = start.elapsed().as_nanos();
 
         println!("{res} [{dur} ns]");
@@ -11,7 +11,7 @@ fn main() {
 mod day13 {
     use std::cmp::Ordering;
 
-    pub fn part1(input: &str) -> u64 {
+    pub fn part1() -> u64 {
         let pairs = parse_pairs();
         pairs
             .iter()
@@ -21,7 +21,7 @@ mod day13 {
             .sum()
     }
 
-    pub fn part2(input: &str) -> u64 {
+    pub fn part2() -> u64 {
         let mut all = collect_packets();
         let two = Pkt::from("[[2]]");
         let six = Pkt::from("[[6]]");
@@ -51,7 +51,7 @@ mod day13 {
     }
 
     fn collect_packets() -> Vec<Pkt> {
-        let mut lines = include_str!("input.txt").lines();
+        let lines = include_str!("input.txt").lines();
         lines.filter(|s| !s.is_empty()).map(Pkt::from).collect()
     }
 
@@ -109,7 +109,7 @@ mod day13 {
     impl From<&str> for Pkt {
         fn from(s: &str) -> Self {
             match Pkt::parse(s) {
-                Some((p, _)) => { println!("{:?}", p); p },
+                Some((p, _)) => p,
                 None => unreachable!(),
             }
         }
@@ -124,7 +124,6 @@ mod day13 {
     impl PartialOrd for Pkt {
         fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
             use Pkt::{Int, List};
-            println!("comparing {self:?} with {other:?}: ");
             let res = match (self, other) {
                 (Int(l), Int(r)) => Some(l.cmp(r)),
                 (Int(_), List(_)) => List(vec![self.clone()]).partial_cmp(other),
@@ -133,11 +132,9 @@ mod day13 {
                     for (lv, rv) in l.iter().zip(r.iter()) {
                         match lv.partial_cmp(rv) {
                             Some(Ordering::Equal) => {
-                                println!("\t{lv:?} == {rv:?}");
                                 continue;
                             },
                             difference => {
-                                println!("\t{lv:?} != {rv:?}: {difference:?}",);
                                 return difference;
                             }
                         };
@@ -145,7 +142,6 @@ mod day13 {
                     Some(l.len().cmp(&r.len()))
                 }
             };
-            println!("\t{res:?}");
             res
         }
     }
@@ -163,5 +159,3 @@ mod day13 {
         }
     }
 }
-
-const INPUT: &str = include_str!("input.txt");
