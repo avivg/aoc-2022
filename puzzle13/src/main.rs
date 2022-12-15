@@ -9,8 +9,6 @@ fn main() {
 }
 
 mod day13 {
-    use std::cmp::Ordering;
-
     pub fn part1() -> u64 {
         let pairs = parse_pairs();
         pairs
@@ -30,11 +28,11 @@ mod day13 {
         all.sort();
         let mut twoi = usize::default();
         let mut sixi = usize::default();
-        for i in 0..all.len() {
-            if all[i] == two {
+        for (i, pkt) in all.iter().enumerate() {
+            if *pkt == two {
                 twoi = i + 1;
             }
-            if all[i] == six {
+            if *pkt == six {
                 sixi = i + 1;
             }
         }
@@ -55,6 +53,7 @@ mod day13 {
         lines.filter(|s| !s.is_empty()).map(Pkt::from).collect()
     }
 
+    #[allow(clippy::derive_ord_xor_partial_ord)]
     #[derive(Debug, Eq, Ord, Clone)]
     enum Pkt {
         Int(i32),
@@ -79,14 +78,14 @@ mod day13 {
                 None => Some((s.parse::<i32>().unwrap().into(), s.chars().count())), // s contain only a number
                 Some(len) => match len {
                     0 => None, // s starts with a ']', '[' or ','
-                    _ => Some(((&s[..len]).parse::<i32>().unwrap().into(), len))
+                    _ => Some((s[..len].parse::<i32>().unwrap().into(), len))
                 }
             }
         }
 
         fn parse_list(s: &str) -> Option<(Pkt, usize)> {
             assert!(!s.is_empty());
-            assert_eq!(s.chars().nth(0), Some('['));
+            assert_eq!(s.chars().next(), Some('['));
             let mut len = 1; // '['
             let mut vals = vec![];
             loop {
@@ -131,7 +130,7 @@ mod day13 {
                 (List(l), List(r)) => {
                     for (lv, rv) in l.iter().zip(r.iter()) {
                         match lv.partial_cmp(rv) {
-                            Some(Ordering::Equal) => {
+                            Some(std::cmp::Ordering::Equal) => {
                                 continue;
                             },
                             difference => {
