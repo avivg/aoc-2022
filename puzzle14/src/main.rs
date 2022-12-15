@@ -77,7 +77,7 @@ mod day14 {
         }
 
         fn empty(&self, coord: &Coord) -> bool {
-            false == self.grid[coord.y][coord.x - self.minx]
+            !self.grid[coord.y][coord.x - self.minx]
         }
 
         fn fill(&mut self, coord: &Coord) {
@@ -109,7 +109,7 @@ mod day14 {
 
     impl From<&str> for Coord {
         fn from(s: &str) -> Self {
-            let mut parts = s.split(",").map(|ps| ps.parse::<usize>().unwrap());
+            let mut parts = s.split(',').map(|ps| ps.parse::<usize>().unwrap());
             Self {
                 x: parts.next().unwrap(),
                 y: parts.next().unwrap(),
