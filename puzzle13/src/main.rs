@@ -158,4 +158,17 @@ mod day13 {
             }
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn real_part1() {
+            assert_eq!(5555, super::part1());
+        }
+
+        #[test]
+        fn real_part2() {
+            assert_eq!(22852, super::part2());
+        }
+    }
 }
