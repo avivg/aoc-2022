@@ -156,8 +156,8 @@ mod day16 {
             let mut max_pressure: u64 = travelers.iter().map(|t| t.pressure).sum();
 
             for e in self.graph.edges_directed(prev, Direction::Outgoing) {
-                let dur = *e.weight();
-                if dur >= remaining {
+                let duration = *e.weight() + 1;
+                if duration >= remaining {
                     continue;
                 }
                 let next = e.target();
@@ -166,10 +166,10 @@ mod day16 {
                 }
                 let added_pressure = *self.graph.node_weight(next).unwrap();
 
-                travelers[next_traveler].push_step(Step::new(next, dur, added_pressure));
+                travelers[next_traveler].push(next, duration, added_pressure);
                 max_pressure = max_pressure
                     .max(self.max_relief(travelers, (next_traveler + 1) % travelers.len()));
-                travelers[next_traveler].pop_step();
+                travelers[next_traveler].pop(duration, added_pressure);
             }
 
             max_pressure
@@ -178,10 +178,9 @@ mod day16 {
 
     #[derive(Clone)]
     struct Traveler {
-        path: Path,       // current path
-        remaining: usize, // remaining time
-        pressure: u64,
-        steps: Vec<Step>,
+        path: Path,         // current path
+        remaining: usize,   // remaining time
+        pressure: u64,      // relieved pressure
     }
 
     impl Traveler {
@@ -190,41 +189,20 @@ mod day16 {
                 path: vec![start],
                 remaining: time,
                 pressure: 0,
-                steps: vec![],
+                // steps: vec![],
             }
         }
 
-        fn push_step(&mut self, mut s: Step) {
-            s.duration += 1; // add 1 minute for opening the valve
-            self.path.push(s.next);
-            self.remaining -= s.duration;
-            s.pressure *= self.remaining as u64; // keep the actual added pressure in the step
-            self.pressure += s.pressure;
-            self.steps.push(s);
+        fn push(&mut self, next: NodeIndex, duration: usize, pressure: u64) {
+            self.path.push(next);
+            self.remaining -= duration;
+            self.pressure += pressure * self.remaining as u64;
         }
 
-        fn pop_step(&mut self) {
-            let s = self.steps.pop().unwrap();
-            self.pressure -= s.pressure;
-            self.remaining += s.duration;
+        fn pop(&mut self, duration: usize, pressure: u64) {
+            self.pressure -= pressure * self.remaining as u64;
+            self.remaining += duration;
             self.path.pop();
-        }
-    }
-
-    #[derive(Clone)]
-    struct Step {
-        next: NodeIndex,
-        duration: usize,
-        pressure: u64,
-    }
-
-    impl Step {
-        fn new(next: NodeIndex, duration: usize, pressure: u64) -> Self {
-            Self {
-                next,
-                duration,
-                pressure,
-            }
         }
     }
 
