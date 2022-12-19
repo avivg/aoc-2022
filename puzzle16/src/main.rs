@@ -23,11 +23,16 @@ mod day16 {
         let valves = parse_valves(input);
         let tunnels = Tunnels::build(valves);
         dbg!(&tunnels);
-        dbg!(tunnels.optimal(30)).1
+        // tunnels.optimal_single(30)
+        tunnels.optimal_relief(1, 30)
     }
 
     pub fn part2(input: &str) -> u64 {
-        todo!()
+        let valves = parse_valves(input);
+        let tunnels = Tunnels::build(valves);
+        dbg!(&tunnels);
+        // tunnels.optimal_pair(26)
+        tunnels.optimal_relief(2, 26)
     }
 
     fn parse_valves(input: &str) -> Vec<Valve> {
@@ -138,58 +143,88 @@ mod day16 {
             reduced
         }
 
-        fn pressure(&self, path: &Path, time: usize) -> u64 {
-            let mut time = time; // shadow for mutability
-            let mut valves = path.iter();
-            let mut cur = valves.next().unwrap();
-            let mut pressure = 0;
-            for next in valves {
-                let edge = self.graph.edges_connecting(*cur, *next).next().unwrap();
-                let duration = *self.graph.edge_weight(edge.id()).unwrap() + 1;
-                if duration < time {
-                    cur = next;
-                    time -= duration;
-                    pressure += *self.graph.node_weight(*next).unwrap() * time as u64;
-                } else {
-                    break;
-                }
-            }
-            pressure
-        }
-
-        fn optimal(&self, time: usize) -> (Path, u64) {
+        fn optimal_relief(&self, num_travelers: usize, time: usize) -> u64 {
             let aa = self.valve_nodes["AA"];
-            let mut start_path = vec![aa];
-            self.best_path(time, time, &mut start_path)
+            let mut travelers = vec![Traveler::new(aa, time); num_travelers];
+            self.max_relief(&mut travelers, 0)
         }
 
-        fn best_path(
-            &self,
-            orig_time: usize,
-            remain_time: usize,
-            cur_path: &mut Path,
-        ) -> (Path, u64) {
-            let start = *cur_path.last().unwrap();
-            let mut max = self.pressure(cur_path, orig_time);
-            let mut best = cur_path.clone();
-            for e in self.graph.edges_directed(start, Direction::Outgoing) {
-                let neighbor = e.target();
-                if cur_path.contains(&neighbor) {
+        fn max_relief(&self, travelers: &mut Vec<Traveler>, next_traveler: usize) -> u64 {
+            let nt = &travelers[next_traveler];
+            let prev = *nt.path.last().unwrap();
+            let remaining = nt.remaining;
+            let mut max_pressure: u64 = travelers.iter().map(|t| t.pressure).sum();
+
+            for e in self.graph.edges_directed(prev, Direction::Outgoing) {
+                let dur = *e.weight();
+                if dur >= remaining {
                     continue;
                 }
-                if *e.weight() > remain_time {
+                let next = e.target();
+                if travelers.iter().any(|t| t.path.contains(&next)) {
                     continue;
                 }
-                cur_path.push(neighbor);
-                let (path, pressure) =
-                    self.best_path(orig_time, remain_time - *e.weight(), cur_path);
-                if pressure > max {
-                    max = pressure;
-                    best = path;
-                }
-                cur_path.pop();
+                let added_pressure = *self.graph.node_weight(next).unwrap();
+
+                travelers[next_traveler].push_step(Step::new(next, dur, added_pressure));
+                max_pressure = max_pressure
+                    .max(self.max_relief(travelers, (next_traveler + 1) % travelers.len()));
+                travelers[next_traveler].pop_step();
             }
-            (best, max)
+
+            max_pressure
+        }
+    }
+
+    #[derive(Clone)]
+    struct Traveler {
+        path: Path,       // current path
+        remaining: usize, // remaining time
+        pressure: u64,
+        steps: Vec<Step>,
+    }
+
+    impl Traveler {
+        fn new(start: NodeIndex, time: usize) -> Self {
+            Self {
+                path: vec![start],
+                remaining: time,
+                pressure: 0,
+                steps: vec![],
+            }
+        }
+
+        fn push_step(&mut self, mut s: Step) {
+            s.duration += 1; // add 1 minute for opening the valve
+            self.path.push(s.next);
+            self.remaining -= s.duration;
+            s.pressure *= self.remaining as u64; // keep the actual added pressure in the step
+            self.pressure += s.pressure;
+            self.steps.push(s);
+        }
+
+        fn pop_step(&mut self) {
+            let s = self.steps.pop().unwrap();
+            self.pressure -= s.pressure;
+            self.remaining += s.duration;
+            self.path.pop();
+        }
+    }
+
+    #[derive(Clone)]
+    struct Step {
+        next: NodeIndex,
+        duration: usize,
+        pressure: u64,
+    }
+
+    impl Step {
+        fn new(next: NodeIndex, duration: usize, pressure: u64) -> Self {
+            Self {
+                next,
+                duration,
+                pressure,
+            }
         }
     }
 
@@ -202,7 +237,7 @@ mod day16 {
         }
 
         #[test]
-        fn real_part2() {
+        fn real_part1() {
             assert_eq!(1986, super::part1(crate::INPUT));
         }
 
@@ -210,6 +245,11 @@ mod day16 {
         fn sample_part2() {
             const TEST_INPUT: &str = include_str!("example.txt");
             assert_eq!(1707, super::part2(TEST_INPUT))
+        }
+
+        #[test]
+        fn real_part2() {
+            assert_eq!(2464, super::part2(crate::INPUT));
         }
     }
 }
