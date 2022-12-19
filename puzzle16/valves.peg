@@ -1,0 +1,5 @@
+valve = { "Valve " ~ valve_name ~ " has flow rate=" ~ flow_rate ~ "; " ~ lead_to_valves }
+flow_rate = { ASCII_DIGIT+ }
+valve_name = { ASCII_ALPHA_UPPER{2} }
+lead_to_valves = {("tunnel leads to valve " ~ valve_name) |
+                    ("tunnels lead to valves " ~ valve_name ~ (", " ~ valve_name)+)}
