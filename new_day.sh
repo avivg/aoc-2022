@@ -20,6 +20,31 @@ mod day$1 {
     pub fn part2(input: &str) -> u64 {
         todo!()
     }
+
+    #[cfg(test)]
+    mod tests {
+        const EXAMPLE: &str = \"\";
+
+        #[test]
+        fn example_part1() {
+            assert_eq!(0, super::part1(EXAMPLE));
+        }
+
+        #[test]
+        fn real_part1() {
+            assert_eq!(0, super::part1(crate::INPUT));
+        }
+
+        #[test]
+        fn example_part2() {
+            assert_eq!(0, super::part2(EXAMPLE));
+        }
+
+        #[test]
+        fn real_part2() {
+            assert_eq!(0, super::part2(crate::INPUT));
+        }
+    }
 }
 
 const INPUT: &str = include_str!(\"input.txt\");
