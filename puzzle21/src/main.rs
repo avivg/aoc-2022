@@ -97,15 +97,15 @@ mod day21 {
         let topo = petgraph::algo::toposort(&*g, None).unwrap();
         for ni in topo {
             let n = g.node_weight(ni).unwrap();
-            // println!("evaluating: {n:?}:");
+            println!("evaluating: {n:?}:");
             let mut inputs = vec![];
             for op_idx in &n.ordered_deps {
                 let depn = g.node_weight(*op_idx).unwrap();
-                // println!("\tinput: {} from: {}", depn.val, depn.name);
+                println!("\tinput: {} from: {}", depn.val, depn.name);
                 inputs.push(depn.val);
             }
             let val = g.node_weight(ni).unwrap().op.eval(inputs);
-            // println!("\toutput: {val}");
+            println!("\toutput: {val}");
             g.node_weight_mut(ni).unwrap().val = val;
         }
     }
