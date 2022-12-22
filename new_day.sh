@@ -23,8 +23,6 @@ mod day$1 {
 
     #[cfg(test)]
     mod tests {
-        const EXAMPLE: &str = \"\";
-
         #[test]
         fn example_part1() {
             assert_eq!(0, super::part1(EXAMPLE));
@@ -44,6 +42,8 @@ mod day$1 {
         fn real_part2() {
             assert_eq!(0, super::part2(crate::INPUT));
         }
+        const EXAMPLE: &str = \"\\
+\";
     }
 }
 
