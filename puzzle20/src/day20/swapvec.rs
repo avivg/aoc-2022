@@ -39,29 +39,9 @@ impl SwapVec {
 
     // Swaps the element in original order 'idx' with the element pointed by nodes[idx].next
     pub fn swap_with_next(&mut self, idx: usize) {
-        //
-        //     1      2      3
-        //  N  ->  N  ->  N  -> N
-        // prv <- idx <- nxt <- nxtnxt
-        //      4      5      6
-        //
-        // Swaps N_idx with N_nxt.
-
-        let nxt = self.nodes[idx].next;
-        let nxtnxt = self.nodes[nxt].next;
-        let prv = self.nodes[idx].prev;
-
-        // update arrows 2, 4
-        self.nodes[idx].next = nxtnxt;
-        self.nodes[idx].prev = nxt;
-
-        // update arrows 3, 5
-        self.nodes[nxt].next = idx;
-        self.nodes[nxt].prev = prv;
-
-        // update arrows 1, 6
-        self.nodes[prv].next = nxt;
-        self.nodes[nxtnxt].prev = idx;
+        let next = self.nodes[idx].next;
+        self.remove(idx);
+        self.insert_after(next, idx);
     }
 
     pub fn swap_with_prev(&mut self, idx: usize) {
@@ -71,6 +51,26 @@ impl SwapVec {
 
     pub fn mixed_iter<'a>(&'a self) -> impl Iterator<Item = i64> + 'a {
         SwapVecIter::from(self)
+    }
+
+    fn remove(&mut self, idx: usize) {
+        let prev = self.nodes[idx].prev;
+        let next = self.nodes[idx].next;
+
+        self.nodes[next].prev = prev;
+        self.nodes[prev].next = next;
+    }
+
+    fn insert_after(&mut self, after_idx: usize, inserted_idx: usize) {
+        let next = self.nodes[after_idx].next;
+
+        // Set new inserted node's next and prev
+        self.nodes[inserted_idx].next = next;
+        self.nodes[inserted_idx].prev = after_idx;
+
+        // Fix existing nodes' pointers
+        self.nodes[after_idx].next = inserted_idx;
+        self.nodes[next].prev = inserted_idx;
     }
 }
 
