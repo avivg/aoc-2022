@@ -1,0 +1,8 @@
+line = { monkey_name ~ ": " ~ expression }
+monkey_name = { ASCII_ALPHA+ }
+expression = {(number)|
+                (monkey_name ~ op ~ monkey_name)}
+number = { ASCII_DIGIT+ }
+op = {("+" | "-" | "*" | "/")}
+
+WHITESPACE = _{" "}
