@@ -1,0 +1,4 @@
+trace = { ( num | cw | ccw )+ }
+num = { ASCII_DIGIT+ }
+cw = { "R" }
+ccw = { "L" }
